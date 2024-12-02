@@ -48,7 +48,8 @@ async function handler(ctx) {
             link: `${host}/tr/${i.id}.html`,
             pubDate: i.ezt,
             enclosure_type: 'application/x-bittorrent',
-            enclosure_url: i.zlink,
+            // enclosure_url: i.zlink,
+            enclosure_url: `${host}${i.down}`,
             enclosure_length: genSize(i.zsize),
             category: strsJoin(i.zqxd, i.text_html, i.audio_html, i.new === 1 ? '新' : ''),
         }))
