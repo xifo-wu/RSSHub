@@ -27,6 +27,7 @@ export const route: Route = {
 
 async function handler(ctx) {
     const domain = ctx.req.param('domain') ?? '2';
+    const proxy = ctx.req.query('proxy');
     const number = ctx.req.param('number');
     if (!/^[1-9]$/.test(domain)) {
         throw new InvalidParameterError('Invalid domain');
@@ -40,20 +41,22 @@ async function handler(ctx) {
     const _link = `${host}/prod/core/system/getVideoDetail/${number}`;
 
     const data = (await doGot(0, host, _link)).data;
-    const items = Object.values(data.ecca).flatMap((item) =>
-        item.map((i) => ({
-            title: i.zname,
-            guid: i.zname,
-            description: `${i.zname}[${i.zsize}]`,
-            link: `${host}/tr/${i.id}.html`,
-            pubDate: i.ezt,
-            enclosure_type: 'application/x-bittorrent',
-            // enclosure_url: i.zlink,
-            enclosure_url: `${host}${i.down}`,
-            enclosure_length: genSize(i.zsize),
-            category: strsJoin(i.zqxd, i.text_html, i.audio_html, i.new === 1 ? '新' : ''),
-        }))
-    );
+    const items = Object.values(data.ecca).flatMap((item: any) => item.map((i: any) => {
+            let newZName = i.zname.replace(/\[/, ' [');
+            newZName = newZName.replace(/第\d+(-\d+)?集\s*/, '');
+
+            return {
+                title: newZName,
+                guid: newZName,
+                description: `${newZName}[${i.zsize}]`,
+                link: `${host}${i.down}`,
+                pubDate: i.ezt,
+                enclosure_type: 'application/x-bittorrent',
+                enclosure_url: `${proxy}${i.down}&domain=${domain}`,
+                enclosure_length: genSize(i.zsize),
+                category: strsJoin(i.zqxd, i.text_html, i.audio_html, i.new === 1 ? '新' : ''),
+            };
+        }));
     return {
         title: data.title,
         link: `${host}/mv/${number}.html`,
